@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "T88HnXUBzuhXyznQkKIoJfNLn6XjR8DzQpr5xXpw+SE=",
+  "Source": "VehicleSurveillance.Payment.API",
+  "BasePath": "_content/VehicleSurveillance.Payment.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

@@ -1,0 +1,12 @@
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\bin\Debug\net8.0\VehicleSurveillance.Domain.deps.json
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\bin\Debug\net8.0\VehicleSurveillance.Domain.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\bin\Debug\net8.0\VehicleSurveillance.Domain.pdb
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\VehicleSurveillance.Domain.csproj.AssemblyReference.cache
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\VehicleSurveillance.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\VehicleSurveillance.Domain.AssemblyInfoInputs.cache
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\VehicleSurveillance.Domain.AssemblyInfo.cs
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\VehicleSurveillance.Domain.csproj.CoreCompileInputs.cache
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\VehicleSurveillance.Domain.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\refint\VehicleSurveillance.Domain.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\VehicleSurveillance.Domain.pdb
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Domain\obj\Debug\net8.0\ref\VehicleSurveillance.Domain.dll

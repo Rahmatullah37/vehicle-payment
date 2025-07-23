@@ -1,0 +1,17 @@
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\bin\Debug\net8.0\VehicleSurveillance.Services.deps.json
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\bin\Debug\net8.0\VehicleSurveillance.Services.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\bin\Debug\net8.0\VehicleSurveillance.Services.pdb
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\bin\Debug\net8.0\VehicleSurveillance.Data.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\bin\Debug\net8.0\VehicleSurveillance.Domain.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\bin\Debug\net8.0\VehicleSurveillance.Data.pdb
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\bin\Debug\net8.0\VehicleSurveillance.Domain.pdb
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleSurveillance.Services.csproj.AssemblyReference.cache
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleSurveillance.Services.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleSurveillance.Services.AssemblyInfoInputs.cache
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleSurveillance.Services.AssemblyInfo.cs
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleSurveillance.Services.csproj.CoreCompileInputs.cache
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleS.75C52EE2.Up2Date
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleSurveillance.Services.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\refint\VehicleSurveillance.Services.dll
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\VehicleSurveillance.Services.pdb
+C:\Users\imran computer\source\repos\VehicleSurveillance.Payment.API\VehicleSurveillance.Services\obj\Debug\net8.0\ref\VehicleSurveillance.Services.dll

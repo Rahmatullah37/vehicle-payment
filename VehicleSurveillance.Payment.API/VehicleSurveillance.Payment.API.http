@@ -1,0 +1,6 @@
+@VehicleSurveillance.Payment.API_HostAddress = http://localhost:5183
+
+GET {{VehicleSurveillance.Payment.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
