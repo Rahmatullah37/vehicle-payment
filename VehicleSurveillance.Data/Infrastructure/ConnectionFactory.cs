@@ -5,32 +5,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VisualSoft.Surveillance.Payment.Domain.Configurations;
+using VisualSoft.Surveillance.Payment.Domain.Configurations;
 
-namespace VehicleSurveillance.Data.Infrastructure
+namespace VisualSoft.Surveillance.Payment.Data.Infrastructure
 {
     public class ConnectionFactory:IConnectionFactory
     {
-        private readonly IConfiguration _configuration;
+        private readonly IServiceConfiguration _serviceConfiguration;
+        //public ConnectionFactory(IServiceConfiguration serviceConfiguration)
+        //{
+        //    _serviceConfiguration = serviceConfiguration;
+        //}
+        public ConnectionFactory(IServiceConfiguration serviceConfiguration)
+        {
+            if (serviceConfiguration == null)
+                throw new ArgumentNullException(nameof(serviceConfiguration), "ServiceConfiguration not injected");
 
-        public string? ConnectionString
+            _serviceConfiguration = serviceConfiguration;
+        }
+        public string ConnectionString
         {
             get
             {
-                if (_configuration == null)
+                if (_serviceConfiguration.DatabaseConnectionString == null)
                 {
-                    throw new ArgumentNullException(nameof(_configuration));
+                    throw new ArgumentNullException(nameof(_serviceConfiguration));
                 }
                 else
                 {
-                    return _configuration.GetSection("ConnectionStrings:DatabaseConnectionString").Value;
+                    //return _configuration.GetSection("ConnectionStrings:DatabaseConnectionString").Value;
+                    return _serviceConfiguration.DatabaseConnectionString;
                 }
             }
         }
 
-        public ConnectionFactory(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        
 
         public NpgsqlConnection Connection
         {

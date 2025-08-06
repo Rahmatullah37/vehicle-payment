@@ -1,62 +1,102 @@
-﻿using Dapper;
+﻿
+using Dapper;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using VehicleSurveillance.Data.Models;
+using System.Threading.Tasks;
+using VisualSoft.Surveillance.Payment.Data.Infrastructure;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
 
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
     public class PaymentModeRepository : IPaymentModeRepository
     {
         private readonly IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
 
-        public PaymentModeRepository(IDbConnection connection, IDbTransaction transaction)
+        private readonly IUserIdentificationModel _logedinUser;
+
+
+        public PaymentModeRepository(IDbConnection connection, IUserIdentificationModel logedinUser)
         {
             _connection = connection;
-            _transaction = transaction;
+            _logedinUser = logedinUser;
         }
 
-        public List<PaymentModeDataModel> GetAll()
+
+        public async Task<IEnumerable<PaymentModeDataModel>> GetAll()
         {
-            return _connection.Query<PaymentModeDataModel>("SELECT * FROM PaymentModes", transaction: _transaction).ToList();
+           
+            var sql = @"SELECT * FROM PaymentModes;";
+            return await _connection.QueryAsync<PaymentModeDataModel>(sql);
         }
 
-        public PaymentModeDataModel GetById(Guid id)
+        public async Task<PaymentModeDataModel?> GetById(Guid id)
         {
-            return _connection.QueryFirstOrDefault<PaymentModeDataModel>(
-                "SELECT * FROM PaymentModes WHERE id = @Id", new { Id = id }, transaction: _transaction);
+            var sql = @"SELECT * FROM PaymentModes WHERE id = @Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+
+            return await _connection.QueryFirstOrDefaultAsync<PaymentModeDataModel>(sql, parameters);
         }
 
-        public void Create(PaymentModeDataModel mode)
+        public async Task<PaymentModeDataModel?> GetPaymentByName(string name)
         {
-            _connection.Execute(
-                "INSERT INTO PaymentModes ( name) VALUES ( @Name)",
-                mode,
-                transaction: _transaction);
-        }
+            var sql = @"
+                        SELECT * 
+                        FROM   PaymentModes
+                        WHERE  name = @Name;";
 
-        public void Update(PaymentModeDataModel mode)
-        {
-            _connection.Execute(
-                "UPDATE PaymentModes SET name = @Name WHERE id = @Id",
-                mode,
-                transaction: _transaction);
-        }
-
-        public void Delete(Guid id)
-        {
-            _connection.Execute("DELETE FROM PaymentModes WHERE id = @Id", new { Id = id }, transaction: _transaction);
-        }
-
-        public PaymentModeDataModel GetPaymentByName(string name)
-        {
-            return _connection.QueryFirstOrDefault<PaymentModeDataModel>(
-                "SELECT * FROM PaymentModes WHERE name = @Name",
-                new { Name = name },
-                transaction: _transaction
+            var parameters = new DynamicParameters();
+            parameters.Add("Name", name);
+            return await _connection.QueryFirstOrDefaultAsync<PaymentModeDataModel>(
+                sql,
+                parameters
             );
+        }
+
+
+        public async Task<PaymentModeDataModel?> Create(PaymentModeDataModel mode)
+        {
+            var sql = @"
+                INSERT INTO PaymentModes (
+                    name
+                ) VALUES (
+                    @Name
+                )";
+            var parameters = new DynamicParameters();
+            parameters.Add("@Name", mode.Name);
+
+            return await _connection.QueryFirstOrDefaultAsync<PaymentModeDataModel>(sql, parameters);
+        }
+
+        public async Task<PaymentModeDataModel?> Update(PaymentModeDataModel mode)
+        {
+            var sql = @"
+                UPDATE PaymentModes SET
+                    name = @Name
+                WHERE id = @Id";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", mode.Id);
+            parameters.Add("@Name", mode.Name);
+
+
+            return await _connection.QueryFirstOrDefaultAsync<PaymentModeDataModel>(sql, parameters);
+            
+        }
+
+        public async Task<bool> Delete(Guid id)
+        {
+            var sql = @"DELETE FROM PaymentModes WHERE id = @Id";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+
+            var affectedRows = await _connection.ExecuteAsync(sql, parameters);
+            return affectedRows > 0;
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VehicleSurveillance.Domain.Models
+namespace VisualSoft.Surveillance.Payment.Domain.Models
 {
     public enum TarifTypeEnum
     {

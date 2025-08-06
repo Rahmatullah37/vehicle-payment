@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VehicleSurveillance.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51323973aece1a43b356dc13cec50ed87e802e02")]
 [assembly: System.Reflection.AssemblyProductAttribute("VehicleSurveillance.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VehicleSurveillance.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

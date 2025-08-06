@@ -1,8 +1,8 @@
 {
   "Version": 1,
-  "Hash": "T88HnXUBzuhXyznQkKIoJfNLn6XjR8DzQpr5xXpw+SE=",
-  "Source": "VehicleSurveillance.Payment.API",
-  "BasePath": "_content/VehicleSurveillance.Payment.API",
+  "Hash": "89mQ4jcpfzCfGXCAYg4FkQFgJCtSQW9PxyNhebh2fOM=",
+  "Source": "VisualSoft.Surveillance.Payment.API",
+  "BasePath": "_content/VisualSoft.Surveillance.Payment.API",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],

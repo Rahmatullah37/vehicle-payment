@@ -1,103 +1,103 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VehicleSurveillance.Data.Infrastructure;
-using VehicleSurveillance.Data.Models;
-using VehicleSurveillance.Data.Repositories;
-using VehicleSurveillance.Domain.Constants;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Services.Interfaces;
+using OneOf;
+using VisualSoft.Surveillance.Payment.Data.Infrastructure;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Services.Interfaces;
+using VisualSoft.Surveillance.Payment.Domain.Utils;
 
-namespace VehicleSurveillance.Services.Implementations
+namespace VisualSoft.Surveillance.Payment.Services.Implementations
 {
-    public class TarifTypeService:ITarifTypeService
+    public class TarifTypeService : ITarifTypeService
     {
-            private readonly IUnitOfWork _unitOfWork;
-            private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-            public TarifTypeService(IUnitOfWork unitOfWork, IMapper mapper)
+        public TarifTypeService(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<List<TarifTypeModel>> GetAllAsync()
+        {
+            var dataList = await _unitOfWork.TarifTypeRepository.GetAll();
+            return _mapper.Map<List<TarifTypeModel>>(dataList);
+        }
+
+        public async Task<OneOf<TarifTypeModel, ValidationResult>> GetByIdAsync(Guid id)
+        {
+            var data = await _unitOfWork.TarifTypeRepository.GetById(id);
+            if (data == null)
             {
-                _unitOfWork = unitOfWork;
-                _mapper = mapper;
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"Tarif with ID '{id}' not found."));
+                return validation;
             }
 
-            public List<TarifTypeModel> GetAll()
+            return _mapper.Map<TarifTypeModel>(data);
+        }
+
+        public async Task<OneOf<TarifTypeModel, ValidationResult>> AddAsync(TarifTypeModel model)
+        {
+            try
             {
-                var dataList = _unitOfWork.TarifTypeRepository.GetAll();
-                return _mapper.Map<List<TarifTypeModel>>(dataList);
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+
+
+                var dataModel = _mapper.Map<TarifTypeDataModel>(model);
+                await _unitOfWork.TarifTypeRepository.Create(dataModel);
+                await _unitOfWork.CommitAsync();
+
+                return model;
             }
-
-            public TarifTypeModel GetById(Guid id)
+            catch
             {
-                var data = _unitOfWork.TarifTypeRepository.GetById(id);
-                if (data == null)
-                    throw new KeyNotFoundException($"Tarif with ID '{id}' was not found.");
-                return _mapper.Map<TarifTypeModel>(data);
-            }
-
-            public void Add(TarifTypeModel model)
-            {
-                try
-                {
-                    if (_unitOfWork.Transaction == null)
-                        _unitOfWork.BeginTransaction();
-
-                    model.Created_By = AppConstants.Users.System;
-                    model.Updated_By = AppConstants.Users.System;
-
-
-                    var dataModel = _mapper.Map<TarifTypeDataModel>(model);
-                    _unitOfWork.TarifTypeRepository.Create(dataModel);
-                    _unitOfWork.Commit();
-                }
-                catch
-                {
-                    _unitOfWork.Rollback();
-                    throw;
-                }
-            }
-
-            public void Update(TarifTypeModel model)
-            {
-                try
-                {
-                    if (_unitOfWork.Transaction == null)
-                        _unitOfWork.BeginTransaction();
-
-                    model.Updated_By = AppConstants.Users.System;
-                    model.Updated_Date = DateTime.UtcNow;
-
-                    var dataModel = _mapper.Map<TarifTypeDataModel>(model);
-                    _unitOfWork.TarifTypeRepository.Update(dataModel);
-                    _unitOfWork.Commit();
-                }
-                catch
-                {
-                    _unitOfWork.Rollback();
-                    throw;
-                }
-            }
-
-            public void Delete(Guid id)
-            {
-                try
-                {
-                    if (_unitOfWork.Transaction == null)
-                        _unitOfWork.BeginTransaction();
-
-                    _unitOfWork.TarifTypeRepository.Delete(id);
-                    _unitOfWork.Commit();
-                }
-                catch
-                {
-                    _unitOfWork.Rollback();
-                    throw;
-                }
+                await _unitOfWork.RollbackAsync();
+                throw;
             }
         }
 
-    }
+        public async Task<OneOf<TarifTypeModel, ValidationResult>> UpdateAsync(TarifTypeModel model)
+        {
 
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+
+
+                var dataModel = _mapper.Map<TarifTypeDataModel>(model);
+                await _unitOfWork.TarifTypeRepository.Update(dataModel);
+                await _unitOfWork.CommitAsync();
+
+                return model;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+                await _unitOfWork.TarifTypeRepository.Delete(id);
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+    }
+}

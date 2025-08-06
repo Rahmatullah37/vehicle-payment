@@ -1,26 +1,22 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VehicleSurveillance.Data.Models;
-using VehicleSurveillance.Domain.Models;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
 
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
-    public interface ITarifTypeRepository  //method signature 
+    public interface ITarifTypeRepository
     {
+        Task<IEnumerable<TarifTypeDataModel>> GetAll();
+        Task<TarifTypeDataModel?> GetById(Guid id);
+        Task<TarifTypeDataModel?> Create(TarifTypeDataModel tarifType);
+        Task<TarifTypeDataModel?> Update(TarifTypeDataModel tarifType);
+        Task<bool> Delete(Guid id);
+        Task<TarifTypeDataModel?> GetFixedTarifType();
+        Task<TarifTypeDataModel?> GetHourlyTarifType();
+        Task<TarifTypeEnum> GetTarifType(Guid tarifTypeId);
 
-        List<TarifTypeDataModel> GetAll();
-        TarifTypeDataModel GetById(Guid id);
-        void Create(TarifTypeDataModel tarifType);
-        void Update(TarifTypeDataModel tarifType);
-        void Delete(Guid id);
-        TarifTypeDataModel GetFixedTarifType();
-        TarifTypeDataModel GetHourlyTarifType();
-        TarifTypeEnum GetTarifType(Guid tarifTypeId);
-        decimal GetAmountByTarif(Guid tarifId, TarifTypeEnum type, int totalHours);
-
-
+        Task<decimal> GetAmountByTarif(Guid tarifId, TarifTypeEnum type, int totalHours);
     }
 }

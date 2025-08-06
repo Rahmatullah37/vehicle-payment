@@ -1,20 +1,25 @@
-﻿using System;
+﻿using OneOf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VehicleSurveillance.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Utils;
 
-namespace VehicleSurveillance.Services.Interfaces
+namespace VisualSoft.Surveillance.Payment.Services.Interfaces
 {
     public interface IAccessFeeTransactionService
     {
-        List<AccessFeeTransactionModel> GetAll();
-        AccessFeeTransactionModel GetById(Guid id);
-        void Add(AccessFeeTransactionModel model);
-        void Update(AccessFeeTransactionModel model);
-        void Delete(Guid id);
-        TransactionReportResponse GetTransactionReport(TransactionReportRequest summary);
+        Task<List<AccessFeeTransactionModel>> GetAllAsync();
+        Task<OneOf<AccessFeeTransactionModel, ValidationResult>> GetByIdAsync(Guid id);
 
-    }
+
+        Task<OneOf<AccessFeeTransactionModel, ValidationResult>> AddAsync(AccessFeeTransactionModel model);
+
+        Task<OneOf<AccessFeeTransactionModel, ValidationResult>> UpdateAsync(AccessFeeTransactionModel model);
+       
+        Task DeleteAsync(Guid id);
+       // Task<TransactionReportResponse?> GetTransactionReportAsync(TransactionReportRequest summary);
+ }
 }

@@ -1,177 +1,174 @@
-﻿using Dapper;
-using System;
-using System.Collections.Generic;
+﻿
+using Dapper;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VehicleSurveillance.Data.Models;
-using VehicleSurveillance.Domain.Models;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
 
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
-    public class TarifTypeRepository:ITarifTypeRepository
+    public class TarifTypeRepository : ITarifTypeRepository
     {
-       
-            private readonly IDbConnection _connection;
-            private readonly IDbTransaction _transaction;
 
-            public TarifTypeRepository(IDbConnection connection, IDbTransaction transaction)
-            {
-                _connection = connection;
-                _transaction = transaction;
-            }
+        private readonly IDbConnection _connection;
+        private readonly IUserIdentificationModel _logedinUser;
 
-            public List<TarifTypeDataModel> GetAll()
-            {
-                return _connection.Query<TarifTypeDataModel>("SELECT * FROM TarifType", transaction: _transaction).ToList();
-            }
-
-            public TarifTypeDataModel GetById(Guid id)
-            {
-                return _connection.QueryFirstOrDefault<TarifTypeDataModel>(
-                    "SELECT * FROM TarifType WHERE id = @Id",
-                    new { Id = id },
-                    transaction: _transaction
-                );
-            }
-
-            public void Create(TarifTypeDataModel fixedTarif)
-            {
-                _connection.Execute(
-                    @"INSERT INTO TarifType (name,  is_active, created_date, updated_date, created_by, updated_by)
-                  VALUES (@Name, @Is_Active, @Created_Date, @Updated_Date, @Created_By, @Updated_By)",
-                    fixedTarif,
-                    transaction: _transaction
-                );
-            }
-
-            public void Update(TarifTypeDataModel fixedTarif)
-            {
-                _connection.Execute(
-                    @"UPDATE TarifType SET
-                  name = @Name,
-                
-                  is_active = @Is_Active,
-                  updated_date = @Updated_Date,
-                  updated_by = @Updated_By
-                  WHERE id = @Id",
-                    fixedTarif,
-                    transaction: _transaction
-                );
-            }
-
-            public void Delete(Guid id)
-            {
-                _connection.Execute(
-                    "DELETE FROM TarifType WHERE id = @Id",
-                    new { Id = id },
-                    transaction: _transaction
-                );
-            }
-
-
-        // ✅ 1. Get the TarifTypeDataModel for 'Fixed'
-        public TarifTypeDataModel GetFixedTarifType()
+        public TarifTypeRepository(IDbConnection connection, IUserIdentificationModel logedinUser)
         {
-            return _connection.QueryFirstOrDefault<TarifTypeDataModel>(
-                "SELECT * FROM TarifType WHERE LOWER(name) = LOWER(@Name)",
-                new { Name = "Fixed" },
-                transaction: _transaction
-            );
+            _connection = connection;
+            _logedinUser = logedinUser;
         }
 
-        // Get the TarifTypeEnum from a tarifTypeId
-        public TarifTypeEnum GetTarifType(Guid tarifTypeId)
+        public async Task<IEnumerable<TarifTypeDataModel>> GetAll()
         {
-            var type = _connection.QueryFirstOrDefault<string>(
-                "SELECT name FROM tariftype WHERE id = @Id",
-                new { Id = tarifTypeId },
-                transaction: _transaction
-            );
+           
+            var sql = @"SELECT * FROM TarifType;";
+            return await _connection.QueryAsync<TarifTypeDataModel>(sql);
+        }
 
-            if (type == null)
-                throw new Exception("Tarif type not found with given ID");
+        public async Task<TarifTypeDataModel?> GetById(Guid id)
+        {
+            var sql = @"SELECT * FROM TarifType WHERE id = @Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
 
-            return Enum.TryParse<TarifTypeEnum>(type, ignoreCase: true, out var result)
+            return await _connection.QueryFirstOrDefaultAsync<TarifTypeDataModel>(sql, parameters);
+        }
+
+        public async Task<TarifTypeDataModel?> Create(TarifTypeDataModel tarifType)
+        {
+            var sql = @"
+                INSERT INTO TarifType (
+                    name,
+                    is_active,
+                    created_date,
+                    updated_date,
+                    created_by,
+                    updated_by
+                ) VALUES (
+                    @Name,
+                    @Is_Active,
+                    @Created_Date,
+                    @Updated_Date,
+                    @Created_By,
+                    @Updated_By
+                )";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("Name", tarifType.Name);
+            parameters.Add("Is_Active", tarifType.Is_Active);
+            parameters.Add("Created_Date", tarifType.Created_Date);
+            parameters.Add("Updated_Date", tarifType.Updated_Date);
+            parameters.Add("Created_By", tarifType.Created_By);
+            parameters.Add("Updated_By", tarifType.Updated_By);
+
+            return await _connection.QueryFirstOrDefaultAsync<TarifTypeDataModel>(sql, parameters);
+        }
+
+        public async Task<TarifTypeDataModel?> Update(TarifTypeDataModel tarifType)
+        {
+            var sql= @"
+                UPDATE TarifType
+                SET
+                    name         = @Name,
+                    is_active    = @Is_Active,
+                    updated_date = @Updated_Date,
+                    updated_by   = @Updated_By
+                WHERE id        = @Id";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", tarifType.Id);
+            parameters.Add("Name", tarifType.Name);
+            parameters.Add("Is_Active", tarifType.Is_Active);
+            parameters.Add("Updated_Date", tarifType.Updated_Date);
+            parameters.Add("Updated_By", tarifType.Updated_By);
+
+            return await _connection.QueryFirstOrDefaultAsync<TarifTypeDataModel>(sql, parameters);
+        }
+
+        public async Task<bool> Delete(Guid id)
+        {
+            var sql = @"DELETE FROM TarifType WHERE id = @Id";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+
+            var affectedRows = await _connection.ExecuteAsync(sql, parameters);
+            return affectedRows > 0;
+        }
+
+        public async Task<TarifTypeEnum> GetTarifType(Guid tarifTypeId)
+        {
+            const string query = @"SELECT name FROM TarifType WHERE id = @Id";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", tarifTypeId);
+
+            string? name = await _connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+
+            if (name == null)
+            {
+                throw new Exception("Tarif type not found with given ID.");
+            }
+
+            return Enum.TryParse(name, true, out TarifTypeEnum result)
                 ? result
-                : throw new Exception("Unknown tarif type: " + type);
+                : throw new Exception($"Invalid tarif type: {name}");
+        }
+        public async Task<TarifTypeDataModel?> GetFixedTarifType()
+        {
+            const string query = @"SELECT * FROM TarifType WHERE LOWER(name) = LOWER(@Name)";
+            var parameters = new DynamicParameters();
+            parameters.Add("Name", "Fixed");
+
+           
+            return await _connection.QueryFirstOrDefaultAsync<TarifTypeDataModel>(query, parameters);
+        }
+       
+        public async Task<TarifTypeDataModel?> GetHourlyTarifType()
+        {
+            const string query = @"SELECT * FROM TarifType WHERE name = @Name";
+            var parameters = new DynamicParameters();
+            parameters.Add("Name", "Hourly");
+
+            return await _connection.QueryFirstOrDefaultAsync<TarifTypeDataModel>(query, parameters);
         }
 
-        public TarifTypeDataModel GetHourlyTarifType()
+        public async Task<decimal> GetAmountByTarif(Guid tarifId, TarifTypeEnum type, int totalHours)
         {
-            return _connection.QueryFirstOrDefault<TarifTypeDataModel>(
-                "SELECT * FROM TarifType WHERE name = @Name",
-                new { Name = "Hourly" },
-                transaction: _transaction
-            );
-        }
-
-
-        //Calculate amount based on TarifType
-        //public decimal GetAmountByTarif(Guid tarifId, TarifTypeEnum type, int totalHours)
-        //{
-        //    switch (type)
-        //    {
-        //        case TarifTypeEnum.Fixed:
-        //            return _connection.QueryFirstOrDefault<decimal>(
-        //                "SELECT amount FROM fixedtarif WHERE tarif_id = @TarifId AND is_active = true",
-        //                new { TarifId = tarifId },
-        //                transaction: _transaction
-        //            );
-
-        //        case TarifTypeEnum.Hourly:
-        //            return _connection.QueryFirstOrDefault<decimal>(
-        //                @"SELECT amount FROM hourlytarif 
-        //              WHERE tarif_id = @TarifId 
-        //                AND is_active = true 
-        //                AND @Hours >= from_hour AND @Hours <= to_hour",
-        //                new { TarifId = tarifId, Hours = totalHours },
-        //                transaction: _transaction
-        //            );
-
-        //        case TarifTypeEnum.DistanceBased:
-        //            throw new NotImplementedException("Distance-based tarif not implemented yet");
-
-        //        default:
-        //            throw new Exception("Invalid tarif type");
-        //    }
-        //}
-
-        public decimal GetAmountByTarif(Guid tarifId, TarifTypeEnum type, int totalHours)
-        {
-            switch (type)
+           
+            return type switch
             {
-                case TarifTypeEnum.Fixed:
-                    return _connection.QueryFirstOrDefault<decimal>(
-                        "SELECT amount FROM fixedtarif WHERE tarif_id = @TarifId AND is_active = true",
-                        new { TarifId = tarifId },
-                        transaction: _transaction
-                    );
-
-                case TarifTypeEnum.Hourly:
-                    return GetAmountByHourlyHours(tarifId, totalHours); // 👈 Call helper method
-
-                case TarifTypeEnum.DistanceBased:
-                    throw new NotImplementedException("Distance-based tarif not implemented yet");
-
-                default:
-                    throw new Exception("Invalid tarif type");
-            }
+                TarifTypeEnum.Fixed => await GetFixedTarifAmount(tarifId),
+                TarifTypeEnum.Hourly => await GetHourlyTarifAmount(tarifId, totalHours),
+                TarifTypeEnum.DistanceBased => throw new NotImplementedException("Distance-based tarif not implemented."),
+                _ => throw new ArgumentException("Unknown tarif type."),
+            };
         }
 
-                private decimal GetAmountByHourlyHours(Guid tarifId, int hours)
-                {
-                    return _connection.QueryFirstOrDefault<decimal>(
-                        @"SELECT amount FROM hourlytarif 
-                        WHERE tarif_id = @TarifId 
-                        AND is_active = true 
-                        AND @Hours BETWEEN from_hour AND to_hour",
-                        new { TarifId = tarifId, Hours = hours },
-                        transaction: _transaction
-                    );
-                }
+        private async Task<decimal> GetFixedTarifAmount(Guid tarifId)
+        {
+            const string query = @"SELECT amount FROM FixedTarif WHERE tarif_id = @TarifId AND is_active = true";
+            var parameters = new DynamicParameters();
+            parameters.Add("TarifId", tarifId);
 
+            return await _connection.QueryFirstOrDefaultAsync<decimal>(query, parameters);
+        }
+
+        private async Task<decimal> GetHourlyTarifAmount(Guid tarifId, int hours)
+        {
+            const string query = @"
+                SELECT amount
+                FROM HourlyTarif
+                WHERE
+                    tarif_id = @TarifId
+                    AND is_active = true
+                    AND @Hours BETWEEN from_hour AND to_hour";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("TarifId", tarifId);
+            parameters.Add("Hours", hours);
+
+            return await _connection.QueryFirstOrDefaultAsync<decimal>(query, parameters);
+        }
+       
+       
     }
 }
-

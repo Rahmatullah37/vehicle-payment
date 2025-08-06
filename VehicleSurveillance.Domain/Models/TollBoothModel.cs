@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace VehicleSurveillance.Domain.Models
+﻿
+namespace VisualSoft.Surveillance.Payment.Domain.Models
 {
-    public class TollBoothModel
+    public class TollBoothModel:BaseDto
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Location { get; set; } 
-        public bool IsActive { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
-        public string CreatedBy { get; set; }
-        public string UpdatedBy { get; set; }
+       
     }
 }

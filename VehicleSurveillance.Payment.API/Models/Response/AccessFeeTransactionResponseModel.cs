@@ -1,4 +1,4 @@
-﻿namespace VehicleSurveillance.Payment.API.Models.Response
+﻿namespace VisualSoft.Surveillance.Payment.API.Models.Response
 {
     public class AccessFeeTransactionResponseModel
     {

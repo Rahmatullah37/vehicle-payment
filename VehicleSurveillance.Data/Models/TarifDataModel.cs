@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VehicleSurveillance.Data.Models
+namespace VisualSoft.Surveillance.Payment.Data.Models
 {
     public class TarifDataModel
     {

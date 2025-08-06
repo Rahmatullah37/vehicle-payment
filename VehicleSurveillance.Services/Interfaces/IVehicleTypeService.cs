@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VehicleSurveillance.Domain.Models;
+﻿using OneOf;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Utils;
 
-namespace VehicleSurveillance.Services.Interfaces
+namespace VisualSoft.Surveillance.Payment.Services.Interfaces
 {
     public interface IVehicleTypeService
     {
-
-        List<VehicleTypeModel> GetAll();
-        VehicleTypeModel GetById(Guid id);
-        void Add(VehicleTypeModel model);
-        void Update(VehicleTypeModel model);
-        void Delete(Guid id);
-
+        Task<List<VehicleTypeModel>> GetAllAsync();
+        Task<OneOf<VehicleTypeModel, ValidationResult>> GetByIdAsync(Guid id);
+        Task<OneOf<VehicleTypeModel, ValidationResult>> AddAsync(VehicleTypeModel model);
+        Task<OneOf<VehicleTypeModel, ValidationResult>> UpdateAsync(VehicleTypeModel model);
+        Task DeleteAsync(Guid id);
     }
 }

@@ -1,15 +1,17 @@
 ﻿
-using VehicleSurveillance.Data.Models;
+using System.Threading.Tasks;
+using VisualSoft.Surveillance.Payment.Data.Models;
 
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
     public interface IDistanceTarifRepository
     {
-        List<DistanceTarifDataModel> GetAll();
-        DistanceTarifDataModel GetById(Guid id);
-        void Create(DistanceTarifDataModel distanceTarif);
-        void Update(DistanceTarifDataModel distanceTarif);
-        void Delete(Guid id);
-        DistanceTarifDataModel GetByTarifId(Guid tarifId);
+        
+       Task<IEnumerable<DistanceTarifDataModel>?> GetAll();
+        Task<DistanceTarifDataModel?> GetById(Guid id);
+        Task<DistanceTarifDataModel?> Create(DistanceTarifDataModel distanceTarif);
+        Task<DistanceTarifDataModel?> Update(DistanceTarifDataModel distanceTarif);
+        Task<bool> Delete(Guid id);
+        Task<List<DistanceTarifDataModel>> GetSegmentsForTariffAsync(Guid tarifId);
     }
 }

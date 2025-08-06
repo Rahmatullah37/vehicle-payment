@@ -1,16 +1,17 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
-using VehicleSurveillance.Data.Models;
+using VisualSoft.Surveillance.Payment.Data.Models;
 
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
     public interface IPaymentModeRepository
     {
-        List<PaymentModeDataModel> GetAll();
-        PaymentModeDataModel GetById(Guid id);
-        void Create(PaymentModeDataModel mode);
-        void Update(PaymentModeDataModel mode);
-        void Delete(Guid id);
-        PaymentModeDataModel GetPaymentByName(string name);
+        Task<IEnumerable<PaymentModeDataModel>> GetAll();
+        Task<PaymentModeDataModel?> GetById(Guid id);
+        Task<PaymentModeDataModel?> Create(PaymentModeDataModel mode);
+        Task<PaymentModeDataModel?> Update(PaymentModeDataModel mode);
+        Task<bool> Delete(Guid id);
+        Task<PaymentModeDataModel?> GetPaymentByName(string name);
     }
 }

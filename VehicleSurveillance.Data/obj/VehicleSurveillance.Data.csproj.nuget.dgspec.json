@@ -65,6 +65,10 @@
               "target": "Package",
               "version": "[9.0.7, )"
             },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
             "Npgsql": {
               "target": "Package",
               "version": "[9.0.3, )"
@@ -72,6 +76,14 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[8.0.11, )"
+            },
+            "OneOf": {
+              "target": "Package",
+              "version": "[3.0.271, )"
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[4.3.0, )"
             },
             "dbup": {
               "target": "Package",
@@ -159,6 +171,10 @@
               "target": "Package",
               "version": "[9.0.7, )"
             },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
             "Npgsql": {
               "target": "Package",
               "version": "[9.0.3, )"
@@ -166,6 +182,10 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[8.0.11, )"
+            },
+            "OneOf": {
+              "target": "Package",
+              "version": "[3.0.271, )"
             },
             "dbup": {
               "target": "Package",

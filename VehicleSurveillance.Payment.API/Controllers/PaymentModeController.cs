@@ -1,13 +1,13 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Payment.API.Models.CreateRequest;
-using VehicleSurveillance.Payment.API.Models.Response;
-using VehicleSurveillance.Payment.API.Models.UpdateRequest;
-using VehicleSurveillance.Services.Implementations;
+using AutoMapper;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Services.Implementations;
+using VisualSoft.Surveillance.Payment.API.Models.CreateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.UpdateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.Response;
 
-namespace VehicleSurveillance.Payment.API.Controllers
+namespace VisualSoft.Surveillance.Payment.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -22,63 +22,80 @@ namespace VehicleSurveillance.Payment.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("GetAll")]
-        public IActionResult GetAll()
+        [HttpGet("all")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllAsync()
         {
-            var result = _paymentModeService.GetAll();
-            return Ok(_mapper.Map<List<PaymentModeResponseModel>>(result));
+            var result = await _paymentModeService.GetAllAsync();
+            var response = _mapper.Map<List<PaymentModeResponseModel>>(result);
+            return Ok(response);
+        }
+
+        [HttpPost("Post")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateAsync([FromBody] PaymentModeCreateRequestModel request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var mode = _mapper.Map<PaymentModeModel>(request);
+            await _paymentModeService.AddAsync(mode);
+            return Ok(_mapper.Map<PaymentModeResponseModel>(mode));
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(Guid id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaymentModeResponseModel>> GetByIdAsync(Guid id)
         {
-            try
-            {
-                var data = _paymentModeService.GetById(id);
-                return Ok(_mapper.Map<PaymentModeResponseModel>(data));
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-        }
-
-        [HttpPost("Create")]
-        public IActionResult Create(PaymentModeCreateRequestModel request)
-        {
-            var model = _mapper.Map<PaymentModeModel>(request);
-            _paymentModeService.Add(model);
-            return Ok("Payment Mode added successfully");
+            var result = await _paymentModeService.GetByIdAsync(id);
+            var response = _mapper.Map<PaymentModeResponseModel>(result);
+            return Ok(response);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(Guid id, PaymentModeUpdateModel request)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] PaymentModeUpdateModel request)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                var model = _mapper.Map<PaymentModeModel>(request);
-                model.Id = id;
-                _paymentModeService.Update(model);
-                return Ok("Payment Mode updated successfully");
+                return BadRequest(ModelState);
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+
+            var mode = _mapper.Map<PaymentModeModel>(request);
+            mode.Id = id;
+
+            await _paymentModeService.UpdateAsync(mode);
+            return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            try
-            {
-                _paymentModeService.Delete(id);
-                return Ok("Payment Mode deleted successfully");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            await _paymentModeService.DeleteAsync(id);
+            return Ok();
         }
     }
 }

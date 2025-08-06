@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VehicleSurveillance.Data.Models
+namespace VisualSoft.Surveillance.Payment.Data.Models
 {
     public class AccessFeeTransactionDataModel
     {
@@ -18,6 +18,10 @@ namespace VehicleSurveillance.Data.Models
         public DateTime Updated_Date { get; set; } 
         public string Created_By { get; set; } 
         public string Updated_By { get; set; }
-        public Guid category_id { get; set; }
+        public Guid Category_Id { get; set; }
+
+     
+        public bool IsPackageTransaction { get; set; }
+        public Guid? PackageId { get; set; }
     }
 }

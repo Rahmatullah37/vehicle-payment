@@ -1,93 +1,114 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
+using OneOf;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using VehicleSurveillance.Data.Infrastructure;
-using VehicleSurveillance.Data.Models;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Services.Interfaces;
+using VisualSoft.Surveillance.Payment.Data.Infrastructure;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Utils;
+using VisualSoft.Surveillance.Payment.Services.Interfaces;
 
-namespace VehicleSurveillance.Services.Implementations
+namespace VisualSoft.Surveillance.Payment.Services.Implementations
 {
     public class PaymentModeService : IPaymentModeService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IUserIdentificationModel _loggedInUser;
 
-        public PaymentModeService(IUnitOfWork unitOfWork, IMapper mapper)
+        public PaymentModeService(IUnitOfWork unitOfWork, IMapper mapper, IUserIdentificationModel loggedInUser)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _loggedInUser = loggedInUser;
         }
 
-        public List<PaymentModeModel> GetAll()
+        public async Task<List<PaymentModeModel>> GetAllAsync()
         {
-            var dataList = _unitOfWork.PaymentModeRepository.GetAll();
+            var dataList = await _unitOfWork.PaymentModeRepository.GetAll();
             return _mapper.Map<List<PaymentModeModel>>(dataList);
         }
 
-        public PaymentModeModel GetById(Guid id)
+        public async Task<OneOf<PaymentModeModel, ValidationResult>> GetByIdAsync(Guid id)
         {
-            var data = _unitOfWork.PaymentModeRepository.GetById(id);
+            var data = await _unitOfWork.PaymentModeRepository.GetById(id);
             if (data == null)
-                throw new KeyNotFoundException($"Payment mode with ID '{id}' not found.");
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"Payment mode with ID '{id}' not found."));
+                return validation;
+            }
+
             return _mapper.Map<PaymentModeModel>(data);
         }
 
-        public void Add(PaymentModeModel model)
+        public async Task<OneOf<PaymentModeModel, ValidationResult>> AddAsync(PaymentModeModel mode)
         {
-            try
-            {
-                if (_unitOfWork.Transaction == null)
-                    _unitOfWork.BeginTransaction();
-
-                model.Id = Guid.NewGuid();
-                var dataModel = _mapper.Map<PaymentModeDataModel>(model);
-
-                _unitOfWork.PaymentModeRepository.Create(dataModel);
-                _unitOfWork.Commit();
-            }
-            catch
-            {
-                _unitOfWork.Rollback();
-                throw;
-            }
-        }
-
-        public void Update(PaymentModeModel model)
-        {
+            var model = _mapper.Map<PaymentModeModel>(mode);
+            
+            
             try
             {
                 if (_unitOfWork.Transaction == null)
                     _unitOfWork.BeginTransaction();
 
                 var dataModel = _mapper.Map<PaymentModeDataModel>(model);
+                await _unitOfWork.PaymentModeRepository.Create(dataModel);
+                await _unitOfWork.CommitAsync();
 
-                _unitOfWork.PaymentModeRepository.Update(dataModel);
-                _unitOfWork.Commit();
+                return model;
             }
             catch
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
 
-        public void Delete(Guid id)
+        public async Task<OneOf<PaymentModeModel, ValidationResult>> UpdateAsync(PaymentModeModel mode)
+        {
+            var model = _mapper.Map<PaymentModeModel>(mode);
+            var existing = await _unitOfWork.PaymentModeRepository.GetById(model.Id);
+            if (existing == null)
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"Payment mode with ID '{model.Id}' not found."));
+                return validation;
+            }
+
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+                var dataModel = _mapper.Map<PaymentModeDataModel>(model);
+                await _unitOfWork.PaymentModeRepository.Update(dataModel);
+                await _unitOfWork.CommitAsync();
+
+                return model;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task DeleteAsync(Guid id)
         {
             try
             {
                 if (_unitOfWork.Transaction == null)
                     _unitOfWork.BeginTransaction();
 
-                _unitOfWork.PaymentModeRepository.Delete(id);
-                _unitOfWork.Commit();
+                await _unitOfWork.PaymentModeRepository.Delete(id);
+                await _unitOfWork.CommitAsync();
             }
             catch
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }

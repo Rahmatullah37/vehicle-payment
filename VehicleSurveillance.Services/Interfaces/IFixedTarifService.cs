@@ -1,18 +1,19 @@
-﻿using System;
+﻿using OneOf;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using VehicleSurveillance.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Utils;
 
-namespace VehicleSurveillance.Services.Interfaces
+namespace VisualSoft.Surveillance.Payment.Services.Interfaces
 {
     public interface IFixedTarifService
     {
-        List<FixedTarifModel> GetAll();
-        FixedTarifModel GetById(Guid id);
-        void Add(FixedTarifModel model);
-        void Update(FixedTarifModel model);
-        void Delete(Guid id);
+        Task<List<FixedTarifModel>> GetAllAsync();
+        Task<OneOf<FixedTarifModel, ValidationResult>> GetByIdAsync(Guid id);      
+        Task<OneOf<FixedTarifModel, ValidationResult>> AddAsync(FixedTarifModel model);
+        Task<OneOf<FixedTarifModel, ValidationResult>> UpdateAsync(FixedTarifModel model);       
+        Task DeleteAsync(Guid id);
     }
 }
+

@@ -1,79 +1,123 @@
-﻿using Dapper;
-using System;
-using System.Collections.Generic;
+﻿
+using Dapper;
 using System.Data;
-using System.Linq;
-using VehicleSurveillance.Data.Models;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Models;
 
-
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
-    public class FixedTarifRepository:IFixedTarifRepository
+    public class FixedTarifRepository : IFixedTarifRepository
     {
         private readonly IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
+        private readonly IUserIdentificationModel _logedinUser;
 
-        public FixedTarifRepository(IDbConnection connection, IDbTransaction transaction)
+        public FixedTarifRepository(
+           IDbConnection connection, IUserIdentificationModel logedinUser)
         {
             _connection = connection;
-            _transaction = transaction;
+            _logedinUser = logedinUser;
         }
 
-        public List<FixedTarifDataModel> GetAll()
+       
+
+
+        public async Task<IEnumerable<FixedTarifDataModel>> GetAll()
         {
-            return _connection.Query<FixedTarifDataModel>("SELECT * FROM FixedTarif", transaction: _transaction).ToList();
+            var sql = "SELECT * FROM FixedTarif;";
+            return await _connection.QueryAsync<FixedTarifDataModel>(sql);
         }
 
-        public FixedTarifDataModel GetById(Guid id)
+        public async Task<FixedTarifDataModel?> GetById(Guid id)
         {
-            return _connection.QueryFirstOrDefault<FixedTarifDataModel>(
-                "SELECT * FROM FixedTarif WHERE id = @Id",
-                new { Id = id },
-                transaction: _transaction
-            );
+            var sql = "SELECT * FROM FixedTarif WHERE id = @Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+
+            return await _connection.QueryFirstOrDefaultAsync<FixedTarifDataModel>(sql, parameters);
         }
 
-        public void Create(FixedTarifDataModel fixedTarif)
+        public async Task<FixedTarifDataModel?> GetByTarifId(Guid tarifId)
         {
-            _connection.Execute(
-                @"INSERT INTO FixedTarif (amount, tarif_id, is_active, created_date, updated_date, created_by, updated_by)
-                  VALUES (@Amount, @Tarif_Id, @Is_Active, @Created_Date, @Updated_Date, @Created_By, @Updated_By)",
-                fixedTarif,
-                transaction: _transaction
-            );
+            var sql = "SELECT * FROM FixedTarif WHERE tarif_id = @TarifId AND is_active = TRUE;";
+            var parameters = new DynamicParameters();
+            parameters.Add("@TarifId", tarifId);
+
+            return await _connection.QueryFirstOrDefaultAsync<FixedTarifDataModel>(sql, parameters);
         }
 
-        public void Update(FixedTarifDataModel fixedTarif)
+        public async Task<FixedTarifDataModel?> Create(FixedTarifDataModel fixedTarif)
         {
-            _connection.Execute(
-                @"UPDATE FixedTarif SET
-                  amount = @Amount,
-                  tarif_id = @Tarif_Id,
-                  is_active = @Is_Active,
-                  updated_date = @Updated_Date,
-                  updated_by = @Updated_By
-                  WHERE id = @Id",
-                fixedTarif,
-                transaction: _transaction
-            );
+            var sql = @"
+                INSERT INTO FixedTarif (
+                    id,
+                    amount,
+                    tarif_id,
+                    is_active,
+                    created_date,
+                    updated_date,
+                    created_by,
+                    updated_by
+                ) VALUES (
+                    @Id,
+                    @Amount,
+                    @Tarif_Id,
+                    @Is_Active,
+                    @Created_Date,
+                    @Updated_Date,
+                    @Created_By,
+                    @Updated_By
+                )
+                RETURNING *;";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", fixedTarif.Id);
+            parameters.Add("@Amount", fixedTarif.Amount);
+            parameters.Add("@Tarif_Id", fixedTarif.Tarif_Id);
+            parameters.Add("@Is_Active", fixedTarif.IsActive);
+            parameters.Add("@Created_Date", fixedTarif.CreatedDate, DbType.DateTime);
+            parameters.Add("@Updated_Date", fixedTarif.UpdatedDate, DbType.DateTime);
+            // parameters.Add("@Created_By", fixedTarif.Created_By);
+            parameters.Add("@Created_By", "system");
+           // parameters.Add("@Updated_By", fixedTarif.Updated_By);
+            parameters.Add("@Updated_By", "system");
+
+
+            return await _connection.QueryFirstOrDefaultAsync<FixedTarifDataModel>(sql, parameters);
         }
 
-        public void Delete(Guid id)
+        public async Task<FixedTarifDataModel?> Update(FixedTarifDataModel fixedTarif)
         {
-            _connection.Execute(
-                "DELETE FROM FixedTarif WHERE id = @Id",
-                new { Id = id },
-                transaction: _transaction
-            );
-        }
-        public FixedTarifDataModel GetByTarifId(Guid tarifId)
-        {
-            return _connection.QueryFirstOrDefault<FixedTarifDataModel>(
-                "SELECT * FROM FixedTarif WHERE tarif_id = @TarifId AND is_active = true",
-                new { TarifId = tarifId },
-                transaction: _transaction
-            );
+            var sql = @"
+                UPDATE FixedTarif SET
+                    amount       = @Amount,
+                    tarif_id     = @Tarif_Id,
+                    is_active    = @Is_Active,
+                    updated_date = @Updated_Date,
+                    updated_by   = @Updated_By
+                WHERE id = @Id
+                RETURNING *;";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", fixedTarif.Id);
+            parameters.Add("@Amount", fixedTarif.Amount);
+            parameters.Add("@Tarif_Id", fixedTarif.Tarif_Id);
+            parameters.Add("@Is_Active", fixedTarif.IsActive);
+            parameters.Add("@Updated_Date", fixedTarif.UpdatedDate);
+            parameters.Add("@Updated_By", fixedTarif.UpdatedBy);
+
+
+            return await _connection.QueryFirstOrDefaultAsync<FixedTarifDataModel>(sql, parameters);
         }
 
+        public async Task<bool> Delete(Guid id)
+        {
+            var sql = "DELETE FROM FixedTarif WHERE id = @Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+
+            var affectedRows = await _connection.ExecuteAsync(sql, parameters);
+         
+            return affectedRows > 0;
+        }
     }
 }

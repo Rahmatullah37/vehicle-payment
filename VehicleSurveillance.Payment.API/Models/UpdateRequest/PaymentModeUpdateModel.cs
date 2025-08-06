@@ -1,4 +1,4 @@
-﻿namespace VehicleSurveillance.Payment.API.Models.UpdateRequest
+﻿namespace VisualSoft.Surveillance.Payment.API.Models.UpdateRequest
 {
     public class PaymentModeUpdateModel
     {

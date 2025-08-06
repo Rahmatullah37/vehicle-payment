@@ -1,14 +1,13 @@
-﻿using AutoMapper;
+﻿
+using VisualSoft.Surveillance.Payment.API.Models.CreateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.Response;
+using VisualSoft.Surveillance.Payment.API.Models.UpdateRequest;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Services.Implementations;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Payment.API.Models.CreateRequest;
-using VehicleSurveillance.Payment.API.Models.Response;
-using VehicleSurveillance.Payment.API.Models.UpdateRequest;
-using VehicleSurveillance.Services.Implementations;
+using AutoMapper;
 
-namespace VehicleSurveillance.Payment.API.Controllers
+namespace VisualSoft.Surveillance.Payment.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -23,67 +22,87 @@ namespace VehicleSurveillance.Payment.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public IActionResult GetAll()
+        [HttpGet("all")]
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllAsync()
         {
-            var tarifs = _tarifService.GetAll();
-            var response = _mapper.Map<List<TarifResponseModel>>(tarifs);
+            var result = await _tarifService.GetAllAsync();
+            var response = _mapper.Map<List<TarifResponseModel>>(result);
+            return Ok(response);
+        }
+
+        [HttpPost("Post")]
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateAsync([FromBody] TarifCreateRequestModel request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var tarif = _mapper.Map<TarifModel>(request);
+            await _tarifService.AddAsync(tarif);
+            var response = _mapper.Map<TarifResponseModel>(tarif);
+
             return Ok(response);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(Guid id)
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<TarifResponseModel>> GetByIdAsync(Guid id)
         {
-            try
-            {
-                var tarif = _tarifService.GetById(id);
-                var response = _mapper.Map<TarifResponseModel>(tarif);
-                return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public IActionResult Create([FromBody] TarifCreateRequestModel request)
-        {
-            var model = _mapper.Map<TarifModel>(request);
-            _tarifService.Add(model);
-            return Ok("Tarif created successfully.");
+            var tarif = await _tarifService.GetByIdAsync(id);
+            var response = _mapper.Map<TarifResponseModel>(tarif);
+            return Ok(response);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(Guid id, TarifUpdateModel request)
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateAsync(Guid id, TarifUpdateModel request)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                var model = _mapper.Map<TarifModel>(request);
-                model.Id = id;
-                _tarifService.Update(model);
-                return Ok("Tarif updated successfully.");
+                return BadRequest(ModelState);
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+
+            var tarif = _mapper.Map<TarifModel>(request);
+            tarif.Id = id;
+
+            await _tarifService.UpdateAsync(tarif);
+            return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            try
-            {
-                _tarifService.Delete(id);
-                return Ok("Tarif deleted successfully.");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            await _tarifService.DeleteAsync(id);
+            return Ok();
         }
     }
-
-
 }

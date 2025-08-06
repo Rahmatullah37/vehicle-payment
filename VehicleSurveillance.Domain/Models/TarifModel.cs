@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VehicleSurveillance.Domain.Models
+namespace VisualSoft.Surveillance.Payment.Domain.Models
 {
     public class TarifModel
     {
@@ -17,5 +17,8 @@ namespace VehicleSurveillance.Domain.Models
         public DateTime Updated_Date { get; set; }
         public string Created_By { get; set; }
         public string Updated_By { get; set; }
+      // NEW: Package-related properties
+        public bool IsPackageTransaction { get; set; }
+        public string Message { get; set; }
     }
 }

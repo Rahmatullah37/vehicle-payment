@@ -1,101 +1,107 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
+using OneOf;
 using System;
 using System.Collections.Generic;
-using VehicleSurveillance.Data.Infrastructure;
-using VehicleSurveillance.Data.Models;
-using VehicleSurveillance.Domain.Constants;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Services.Interfaces;
+using System.Threading.Tasks;
+using VisualSoft.Surveillance.Payment.Data.Infrastructure;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Constants;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Utils;
+using VisualSoft.Surveillance.Payment.Services.Interfaces;
 
-
-namespace VehicleSurveillance.Services.Implementations
+namespace VisualSoft.Surveillance.Payment.Services.Implementations
 {
     public class FixedTarifService : IFixedTarifService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IUserIdentificationModel _loggedInUser;
 
-        public FixedTarifService(IUnitOfWork unitOfWork, IMapper mapper)
+        public FixedTarifService(IUnitOfWork unitOfWork, IMapper mapper, IUserIdentificationModel loggedInUser)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _loggedInUser = loggedInUser;
         }
-
-        public List<FixedTarifModel> GetAll()
+        public async Task<List<FixedTarifModel>> GetAllAsync()
         {
-            var dataList = _unitOfWork.FixedTarifRepository.GetAll();
+            var dataList = await _unitOfWork.FixedTarifRepository.GetAll();
             return _mapper.Map<List<FixedTarifModel>>(dataList);
         }
-
-        public FixedTarifModel GetById(Guid id)
+        public async Task<OneOf<FixedTarifModel, ValidationResult>> GetByIdAsync(Guid id)
         {
-            var data = _unitOfWork.FixedTarifRepository.GetById(id);
-            if (data == null)
-                throw new KeyNotFoundException($"FixedTarif with ID '{id}' was not found.");
+            var existing = await _unitOfWork.FixedTarifRepository.GetById(id);
+            if (existing == null)
+            {
+                var validationResult = new ValidationResult();
+                validationResult.Errors.Add(new ValidationError("id", $"{Constants.Errors.ERROR_DETECTION_INVALID} Id = {id}"));
+                return validationResult;
+            }
 
-            return _mapper.Map<FixedTarifModel>(data);
+            var model = _mapper.Map<FixedTarifModel>(existing);
+            return model;
         }
-
-        public void Add(FixedTarifModel model)
+        public async Task<OneOf<FixedTarifModel, ValidationResult>> AddAsync(FixedTarifModel model)
+       
         {
             try
             {
                 if (_unitOfWork.Transaction == null)
                     _unitOfWork.BeginTransaction();
 
-                model.Created_By = AppConstants.Users.System;
-                model.Updated_By = AppConstants.Users.System;
-                model.Created_Date = DateTime.UtcNow;
-                model.Updated_Date = DateTime.UtcNow;
+             
 
                 var dataModel = _mapper.Map<FixedTarifDataModel>(model);
-                _unitOfWork.FixedTarifRepository.Create(dataModel);
-                _unitOfWork.Commit();
+                await _unitOfWork.FixedTarifRepository.Create(dataModel);
+                await _unitOfWork.CommitAsync();
+
+                return _mapper.Map<FixedTarifModel>(dataModel);
             }
             catch
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
-
-        public void Update(FixedTarifModel model)
-        {
-            try
-            {
-                if (_unitOfWork.Transaction == null)
-                    _unitOfWork.BeginTransaction();
-
-                model.Updated_By = AppConstants.Users.System;
-                model.Updated_Date = DateTime.UtcNow;
-
-                var dataModel = _mapper.Map<FixedTarifDataModel>(model);
-                _unitOfWork.FixedTarifRepository.Update(dataModel);
-                _unitOfWork.Commit();
-            }
-            catch
-            {
-                _unitOfWork.Rollback();
-                throw;
-            }
-        }
-
-        public void Delete(Guid id)
-        {
-            try
-            {
-                if (_unitOfWork.Transaction == null)
-                    _unitOfWork.BeginTransaction();
-
-                _unitOfWork.FixedTarifRepository.Delete(id);
-                _unitOfWork.Commit();
-            }
-            catch
-            {
-                _unitOfWork.Rollback();
-                throw;
-            }
-        }
+        public async Task<OneOf<FixedTarifModel, ValidationResult>> UpdateAsync(FixedTarifModel model)
       
+        {
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+               
+
+                var dataModel = _mapper.Map<FixedTarifDataModel>(model);
+                await _unitOfWork.FixedTarifRepository.Update(dataModel);
+                await _unitOfWork.CommitAsync();
+
+                return _mapper.Map<FixedTarifModel>(dataModel);
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+        public async Task DeleteAsync(Guid id)
+        {
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+                await _unitOfWork.FixedTarifRepository.Delete(id);
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
     }
 }

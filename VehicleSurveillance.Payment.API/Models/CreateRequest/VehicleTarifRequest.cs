@@ -1,4 +1,4 @@
-﻿namespace VehicleSurveillance.Payment.API.Models.CreateRequest
+﻿namespace VisualSoft.Surveillance.Payment.API.Models.CreateRequest
 {
     public class VehicleTarifRequest
     {

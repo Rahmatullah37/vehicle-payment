@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VehicleSurveillance.Data.Infrastructure
+namespace VisualSoft.Surveillance.Payment.Data.Infrastructure
 {
     public interface IConnectionFactory
     {

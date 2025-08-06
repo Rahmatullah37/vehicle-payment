@@ -1,13 +1,14 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Payment.API.Models.CreateRequest;
-using VehicleSurveillance.Payment.API.Models.Response;
-using VehicleSurveillance.Payment.API.Models.UpdateRequest;
-using VehicleSurveillance.Services.Implementations;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.API.Models.CreateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.Response;
+using VisualSoft.Surveillance.Payment.API.Models.UpdateRequest;
+using VisualSoft.Surveillance.Payment.Services.Implementations;
 
-namespace VehicleSurveillance.Payment.API.Controllers
+namespace VisualSoft.Surveillance.Payment.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -22,44 +23,64 @@ namespace VehicleSurveillance.Payment.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("GetFixedTarifList")]
-        public IActionResult GetAll()
+        [HttpGet("All")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllAsync()
         {
-            var result = _fixedTarifService.GetAll();
+            var result = await _fixedTarifService.GetAllAsync();
             return Ok(_mapper.Map<List<FixedTarifResponseModel>>(result));
         }
 
-        [HttpPost("PostFixedTarif")]
-        public IActionResult Create(FixedTarifRequestModel request)
+        [HttpPost("Create")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateAsync(FixedTarifRequestModel request)
         {
-            var fixedTarif = _mapper.Map<FixedTarifModel>(request);
-            _fixedTarifService.Add(fixedTarif);
-            return Ok("FixedTarif Added");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var model = _mapper.Map<FixedTarifModel>(request);
+            var result = await _fixedTarifService.AddAsync(model);
+
+            return Ok(_mapper.Map<FixedTarifResponseModel>(result));
         }
 
         [HttpGet("{id}")]
-        public ActionResult<FixedTarifResponseModel> Get(Guid id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByIdAsync(Guid id)
         {
-            try
-            {
-                var fixedTarif = _fixedTarifService.GetById(id);
-                var response = _mapper.Map<FixedTarifResponseModel>(fixedTarif);
-                return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _fixedTarifService.GetByIdAsync(id);
+
+
+            return Ok(_mapper.Map<FixedTarifResponseModel>(result));
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(Guid id, FixedTarifUpdateModel request)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateAsync(Guid id, FixedTarifUpdateModel request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var model = _mapper.Map<FixedTarifModel>(request);
+            model.Id = id;
+
             try
             {
-                var fixedTarif = _mapper.Map<FixedTarifModel>(request);
-                fixedTarif.Id = id;
-                _fixedTarifService.Update(fixedTarif);
+                await _fixedTarifService.UpdateAsync(model);
                 return Ok("FixedTarif updated successfully");
             }
             catch (KeyNotFoundException ex)
@@ -69,11 +90,13 @@ namespace VehicleSurveillance.Payment.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
             {
-                _fixedTarifService.Delete(id);
+                await _fixedTarifService.DeleteAsync(id);
                 return Ok("FixedTarif deleted successfully");
             }
             catch (KeyNotFoundException ex)
@@ -81,7 +104,5 @@ namespace VehicleSurveillance.Payment.API.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
-          
-
     }
 }

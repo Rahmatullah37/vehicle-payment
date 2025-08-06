@@ -1,20 +1,18 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using VehicleSurveillance.Data.Models;
+using VisualSoft.Surveillance.Payment.Data.Models;
 
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
     public interface IVehicleTypeRepository
     {
-        List<VehicleTypeDataModel> GetAll();
-        VehicleTypeDataModel GetById(Guid id);
-        void Create(VehicleTypeDataModel vehicleType);
-        void Update(VehicleTypeDataModel vehicleType);
-        void Delete(Guid id);
-        VehicleTypeDataModel GetByName(string name);
-
+        Task<IEnumerable<VehicleTypeDataModel>> GetAll();
+        Task<VehicleTypeDataModel?> GetById(Guid id);
+        Task<VehicleTypeDataModel?> GetByName(string name);
+        Task<VehicleTypeDataModel?> Create(VehicleTypeDataModel vehicleType);
+        Task<VehicleTypeDataModel?> Update(VehicleTypeDataModel vehicleType);
+        Task<bool> Delete(Guid id);
     }
 }

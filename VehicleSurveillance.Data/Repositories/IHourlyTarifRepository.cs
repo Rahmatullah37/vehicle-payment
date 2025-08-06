@@ -1,22 +1,17 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using VehicleSurveillance.Data.Models;
+using VisualSoft.Surveillance.Payment.Data.Models;
 
-namespace VehicleSurveillance.Data.Repositories
+namespace VisualSoft.Surveillance.Payment.Data.Repositories
 {
     public interface IHourlyTarifRepository
     {
-       
-            List<HourlyTarifDataModel> GetAll();
-            HourlyTarifDataModel GetById(Guid id);
-            void Create(HourlyTarifDataModel hourlyTarif);
-            void Delete(Guid id);
-            void Update(HourlyTarifDataModel hourlyTarif);
-
-
-        
+        Task<IEnumerable<HourlyTarifDataModel>> GetAll();
+        Task<HourlyTarifDataModel?> GetById(Guid id);
+        Task<HourlyTarifDataModel?> Create(HourlyTarifDataModel hourlyTarif);
+        Task<HourlyTarifDataModel?> Update(HourlyTarifDataModel hourlyTarif);
+        Task<bool> Delete(Guid id);
     }
 }

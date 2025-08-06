@@ -1,99 +1,293 @@
-﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using VehicleSurveillance.Data.Infrastructure;
-using VehicleSurveillance.Data.Models;
-using VehicleSurveillance.Domain.Constants;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Services.Interfaces;
+﻿
+using AutoMapper;
+using OneOf;
+using VisualSoft.Surveillance.Payment.Data.Infrastructure;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.Domain.Constants;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Domain.Utils;
+using VisualSoft.Surveillance.Payment.Services.Interfaces;
 
-namespace VehicleSurveillance.Services.Implementations
+namespace VisualSoft.Surveillance.Payment.Services.Implementations
 {
     public class PackagesServices : IPackagesService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IUserIdentificationModel _loggedInUser;
 
-        public PackagesServices(IUnitOfWork unitOfWork, IMapper mapper)
+        public PackagesServices(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IUserIdentificationModel loggedInUser)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _loggedInUser = loggedInUser;
         }
 
-        public List<PackageModel> GetAllPackages()
+        public async Task<List<PackageModel>> GetAllAsync()
         {
-            var dataList = _unitOfWork.PackagesRepository.GetAll();
+            var dataList = await _unitOfWork.PackagesRepository.GetAllAsync();
             return _mapper.Map<List<PackageModel>>(dataList);
         }
 
-        public PackageModel GetPackageById(Guid id)
+        public async Task<OneOf<PackageModel, ValidationResult>> GetByIdAsync(Guid id)
         {
-            var data = _unitOfWork.PackagesRepository.GetById(id);
+            var data = await _unitOfWork.PackagesRepository.GetByIdAsync(id);
             if (data == null)
-                throw new KeyNotFoundException($"Package with ID '{id}' was not found.");
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"{Constants.Errors.ERROR_DETECTION_INVALID} Id = {id}"));
+                return validation;
+            }
+
             return _mapper.Map<PackageModel>(data);
         }
-
-        public void AddPackage(PackageModel model)
+        public async Task<OneOf<PackageModel, ValidationResult>> AddAsync(PackageModel model)
         {
             try
             {
                 if (_unitOfWork.Transaction == null)
                     _unitOfWork.BeginTransaction();
 
-                model.Created_By = AppConstants.Users.System;
-                model.Updated_By = AppConstants.Users.System;
-                model.Created_Date = DateTime.UtcNow;
-                model.Updated_Date = DateTime.UtcNow;
 
                 var dataModel = _mapper.Map<PackageDataModel>(model);
-                _unitOfWork.PackagesRepository.Create(dataModel);
-                _unitOfWork.Commit();
+                await _unitOfWork.PackagesRepository.CreateAsync(dataModel);
+                await _unitOfWork.CommitAsync();
+                return model;
             }
             catch
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
 
-        public void UpdatePackage(PackageModel model)
+        public async Task<OneOf<PackageModel, ValidationResult>> UpdateAsync(PackageModel model)
         {
+            var existing = await _unitOfWork.PackagesRepository.GetByIdAsync(model.Id);
+            if (existing == null)
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"{Constants.Errors.ERROR_DETECTION_INVALID} Id = {model.Id}"));
+                return validation;
+            }
+
             try
             {
                 if (_unitOfWork.Transaction == null)
                     _unitOfWork.BeginTransaction();
-
-                model.Updated_By = AppConstants.Users.System;
-                model.Updated_Date = DateTime.UtcNow;
-
                 var dataModel = _mapper.Map<PackageDataModel>(model);
-                _unitOfWork.PackagesRepository.Update(dataModel);
-                _unitOfWork.Commit();
+                await _unitOfWork.PackagesRepository.UpdateAsync(dataModel);
+
+                await _unitOfWork.CommitAsync();
+                return model;
             }
             catch
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
-
-        public void DeletePackage(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
             try
             {
                 if (_unitOfWork.Transaction == null)
                     _unitOfWork.BeginTransaction();
 
-                _unitOfWork.PackagesRepository.Delete(id);
-                _unitOfWork.Commit();
+                await _unitOfWork.PackagesRepository.DeleteAsync(id);
+                await _unitOfWork.CommitAsync();
             }
             catch
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
+        //public async Task<List<VehiclePackageModel>> SubscribeVehicleToPackageAsync(Guid vehicleId, Guid packageId)
+        //{
+        //    var
+        //}
+        public async Task<List<PackageModel>> GetActivePackagesAsync()
+        {
+            var dataList = await _unitOfWork.PackagesRepository.GetActivePackagesAsync();
+            return _mapper.Map<List<PackageModel>>(dataList);
+        }
+
+        public async Task<List<PackageModel>> GetPackagesByTypeAsync(string packageType)
+        {
+            var dataList = await _unitOfWork.PackagesRepository.GetPackagesByTypeAsync(packageType);
+            return _mapper.Map<List<PackageModel>>(dataList);
+        }
+
+        public async Task<List<PackageModel>> GetPackagesByCostRangeAsync(decimal minCost, decimal maxCost)
+        {
+            var dataList = await _unitOfWork.PackagesRepository.GetPackagesByCostRangeAsync(minCost, maxCost);
+            return _mapper.Map<List<PackageModel>>(dataList);
+        }
+
+        public async Task<PackageModel?> GetCheapestPackageAsync()
+        {
+            var data = await _unitOfWork.PackagesRepository.GetCheapestPackageAsync();
+            return data != null ? _mapper.Map<PackageModel>(data) : null;
+        }
+
+        public async Task<PackageModel?> GetMostExpensivePackageAsync()
+        {
+            var data = await _unitOfWork.PackagesRepository.GetMostExpensivePackageAsync();
+            return data != null ? _mapper.Map<PackageModel>(data) : null;
+        }
+
+        public async Task<int> GetPackageCountAsync()
+        {
+            return await _unitOfWork.PackagesRepository.GetPackageCountAsync();
+        }
+
+        public async Task<int> GetPackageCountByTypeAsync(string packageType)
+        {
+            return await _unitOfWork.PackagesRepository.GetPackageCountByTypeAsync(packageType);
+        }
+        public async Task<OneOf<bool, ValidationResult>> ActivatePackageAsync(Guid id)
+        {
+            var existing = await _unitOfWork.PackagesRepository.GetByIdAsync(id);
+            if (existing == null)
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"{Constants.Errors.ERROR_DETECTION_INVALID} Id = {id}"));
+                return validation;
+            }
+
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+                var result = await _unitOfWork.PackagesRepository.ActivatePackageAsync(id);
+                await _unitOfWork.CommitAsync();
+
+                return result;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<OneOf<bool, ValidationResult>> DeactivatePackageAsync(Guid id)
+        {
+            var existing = await _unitOfWork.PackagesRepository.GetByIdAsync(id);
+            if (existing == null)
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"{Constants.Errors.ERROR_DETECTION_INVALID} Id = {id}"));
+                return validation;
+            }
+
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+                var result = await _unitOfWork.PackagesRepository.DeactivatePackageAsync(id);
+                await _unitOfWork.CommitAsync();
+
+                return result;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<OneOf<bool, ValidationResult>> UpdatePackageCostAsync(Guid id, decimal newCost)
+        {
+            if (newCost <= 0)
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("cost", "Package cost must be greater than zero"));
+                return validation;
+            }
+
+            var existing = await _unitOfWork.PackagesRepository.GetByIdAsync(id);
+            if (existing == null)
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("id", $"{Constants.Errors.ERROR_DETECTION_INVALID} Id = {id}"));
+                return validation;
+            }
+
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+                var result = await _unitOfWork.PackagesRepository.UpdatePackageCostAsync(id, newCost);
+                await _unitOfWork.CommitAsync();
+
+                return result;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> ExistsAsync(Guid id)
+        {
+            return await _unitOfWork.PackagesRepository.ExistsAsync(id);
+        }
+        public async Task<OneOf<bool, ValidationResult>> ExtendVehiclePackageAsync(Guid vehiclePackageId, DateTime newExpireDate)
+        {
+            if (newExpireDate <= DateTime.UtcNow)
+            {
+                var validation = new ValidationResult();
+                validation.Errors.Add(new ValidationError("expireDate", "Expire date must be in the future"));
+                return validation;
+            }
+
+            try
+            {
+                if (_unitOfWork.Transaction == null)
+                    _unitOfWork.BeginTransaction();
+
+                var result = await _unitOfWork.PackagesRepository.ExtendVehiclePackageAsync(vehiclePackageId, newExpireDate);
+                await _unitOfWork.CommitAsync();
+
+                return result;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<List<VehiclePackageModel>> GetExpiredPackagesAsync()
+        {
+            var dataList = await _unitOfWork.PackagesRepository.GetExpiredPackagesAsync();
+            return _mapper.Map<List<VehiclePackageModel>>(dataList);
+        }
+
+        public async Task<int> GetSubscribedVehicleCountByPackageAsync(Guid packageId)
+        {
+            return await _unitOfWork.PackagesRepository.GetSubscribedVehicleCountByPackageAsync(packageId);
+        }
+
+        public async Task<bool> HasActiveSubscriptionAsync(Guid vehicleId, Guid packageId)
+        {
+            return await _unitOfWork.PackagesRepository.HasActiveSubscriptionAsync(vehicleId, packageId);
+        }
+        public async Task<List<PackagePopularityDomainModel>> GetPackagePopularityStatsAsync()
+        {
+            var dataList = await _unitOfWork.PackagesRepository.GetPackagePopularityStatsAsync();
+            return _mapper.Map<List<PackagePopularityDomainModel>>(dataList);
+        }
+       
+
     }
 }

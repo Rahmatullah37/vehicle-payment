@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Data.Models;
-using VehicleSurveillance.Payment.API.Models.CreateRequest;
-using VehicleSurveillance.Payment.API.Models.Response;
-using VehicleSurveillance.Payment.API.Models.UpdateRequest;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Data.Models;
+using VisualSoft.Surveillance.Payment.API.Models.CreateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.Response;
+using VisualSoft.Surveillance.Payment.API.Models.UpdateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.VehicleAccount.CreateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.VehicleAccount.UpdateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.VehicleAccount.Response;
 
-namespace VehicleSurveillance.Payment.API.Mapping
+namespace VisualSoft.Surveillance.Payment.API.Mapping
 {
-    public class MappingProfile:Profile
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
@@ -18,6 +21,9 @@ namespace VehicleSurveillance.Payment.API.Mapping
             CreateMap<AccessFeeTransactionCreateRequestModel, AccessFeeTransactionModel>();
             CreateMap<AccessFeeTransactionUpdateModel, AccessFeeTransactionModel>();
             CreateMap<AccessFeeTransactionModel, AccessFeeTransactionResponseModel>();
+
+            CreateMap<AccessFeeTransactionDataModel, AccessFeeTransactionModel>();
+            CreateMap<AccessFeeTransactionModel, AccessFeeTransactionDataModel>();
 
             CreateMap<PaymentModeCreateRequestModel, PaymentModeModel>();
             CreateMap<PaymentModeUpdateModel, PaymentModeModel>();
@@ -32,28 +38,28 @@ namespace VehicleSurveillance.Payment.API.Mapping
             CreateMap<FixedTarifUpdateModel, FixedTarifModel>();
             CreateMap<FixedTarifModel, FixedTarifResponseModel>();
 
+            CreateMap<FixedTarifModel, FixedTarifDataModel>();
+            CreateMap<FixedTarifDataModel, FixedTarifModel>();
+
             CreateMap<TarifTypeCreateRequestModel, TarifTypeModel>();
             CreateMap<TarifTypeUpdateModel, TarifTypeModel>();
             CreateMap<TarifTypeModel, TarifTypeResponseModel>();
+
 
             CreateMap<VehicleTypeCreateRequestModel, VehicleTypeModel>();
             CreateMap<VehicleTypeUpdateModel, VehicleTypeModel>();
             CreateMap<VehicleTypeModel, VehicleTypeResponseModel>();
 
-            CreateMap<FixedTarifModel, FixedTarifResponseModel>();
 
-            CreateMap<VehicleTarifResponseModel,VehicleTarifModel>();
+            CreateMap<VehicleTarifResponseModel, VehicleTarifModel>();
 
 
-            CreateMap<AccessFeeTransactionDataModel, AccessFeeTransactionModel>();
-            CreateMap<AccessFeeTransactionModel, AccessFeeTransactionDataModel>();
 
 
             CreateMap<PaymentModeModel, PaymentModeDataModel>();
             CreateMap<PaymentModeDataModel, PaymentModeModel>();
 
-            CreateMap<FixedTarifModel, FixedTarifDataModel>();
-            CreateMap<FixedTarifDataModel, FixedTarifModel>();
+
 
             CreateMap<PackageModel, PackageDataModel>();
             CreateMap<PackageDataModel, PackageModel>();
@@ -81,6 +87,42 @@ namespace VehicleSurveillance.Payment.API.Mapping
             CreateMap<TollBoothCreateRequestModel, TollBoothModel>();
             CreateMap<TollBoothUpdateModel, TollBoothModel>();
             CreateMap<TollBoothModel, TollBoothResponseModel>();
+
+            CreateMap<VehiclePackageRequestModel, VehiclePackageModel>();
+            CreateMap<VehiclePackageUpdateModel, VehiclePackageModel>();
+            CreateMap<VehiclePackageModel, VehiclePackageResponseModel>();
+
+
+            CreateMap<VehiclePackageModel, VehiclePackageDataModel>();
+            CreateMap<VehiclePackageDataModel, VehiclePackageModel>();
+
+
+
+            // Vehicle Account mappings - Add these to your MappingProfile constructor
+            CreateMap<VehicleAccountCreateRequestModel, VehicleAccountModel>();
+            CreateMap<VehicleAccountUpdateModel, VehicleAccountModel>();
+            CreateMap<VehicleAccountModel, VehicleAccountResponseModel>();
+
+            CreateMap<VehicleAccountModel, VehicleAccountDataModel>();
+            CreateMap<VehicleAccountDataModel, VehicleAccountModel>();
+
+            CreateMap<FundTransferRequestModel, VehicleAccountModel>();
+            CreateMap<PaymentRequestModel, VehicleAccountModel>();
+
+            // If you have separate transaction models
+            CreateMap<VehicleAccountModel, VehicleAccountDataModel>();
+            CreateMap<VehicleAccountDataModel, VehicleAccountModel>();
+
+            CreateMap<VehicleAccountCreateRequestModel, VehicleAccountModel>();
+            CreateMap<VehicleAccountUpdateModel, VehicleAccountModel>();
+
+
+            CreateMap<VehicleHistoryDomainModel, VehicleAccountDomainModel>();
+            CreateMap<VehicleAccountDomainModel, VehicleAccountResponseModel>();
+            CreateMap<VehicleTransactionHistoryModel, VehicleTransactionHistoryViewModel>();
+
+            CreateMap<PackagePopularityDataModel, PackagePopularityDomainModel>();
+            CreateMap<PackagePopularityDomainModel, PackagePopularityResponseModel>();
         }
     }
 }

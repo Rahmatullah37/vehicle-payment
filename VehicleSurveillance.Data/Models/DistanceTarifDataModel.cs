@@ -5,11 +5,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VisualSoft.Surveillance.Payment.Domain.Models;
 
-namespace VehicleSurveillance.Data.Models
+namespace VisualSoft.Surveillance.Payment.Data.Models
 {
     [Table("DistanceTarif")]
-    public class DistanceTarifDataModel
+    public class DistanceTarifDataModel:BaseDto
     {
         [Key]
         public Guid Id { get; set; }
@@ -22,22 +23,12 @@ namespace VehicleSurveillance.Data.Models
 
         public decimal RatePerKm { get; set; }
 
-        public double Distance { get; set; }
+        public decimal Distance { get; set; }
 
         [ForeignKey("Tarif")]
         public Guid TarifId { get; set; }
 
-        public bool IsActive { get; set; }
-
-        public DateTime CreatedDate { get; set; }
-
-        public DateTime UpdatedDate { get; set; }
-
-        [Required]
-        public string CreatedBy { get; set; }
-
-        [Required]
-        public string UpdatedBy { get; set; }
+      
     }
 
 }

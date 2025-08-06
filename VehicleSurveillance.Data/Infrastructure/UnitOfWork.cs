@@ -1,103 +1,112 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+using System;
 using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Transactions;
-using VehicleSurveillance.Data.Repositories;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Microsoft.Extensions.Logging;
+using VisualSoft.Surveillance.Payment.Data.Repositories;
+using VisualSoft.Surveillance.Payment.Domain.Models;
 
-namespace VehicleSurveillance.Data.Infrastructure
+namespace VisualSoft.Surveillance.Payment.Data.Infrastructure
 {
-    public class UnitOfWork:IUnitOfWork,IDisposable
+    public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly IConnectionFactory _connectionFactory;
-        private readonly IDbConnection connection;
-        private IDbTransaction transaction;
-        public UnitOfWork(IConnectionFactory connectionFactory)
+        private readonly ILogger<UnitOfWork> _logger;
+
+        private readonly IDbConnection _connection;
+        private IDbTransaction _transaction;
+
+        private IUserIdentificationModel? logedinUser = null;
+
+        public UnitOfWork(IConnectionFactory connectionFactory, ILogger<UnitOfWork> logger)
         {
+            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
             _connectionFactory = connectionFactory;
-            connection = _connectionFactory.Connection;
-            connection.Open();
+            _logger = logger;
+
+            _connection = _connectionFactory.Connection;
+            _connection.Open();
+        }
+        public IUserIdentificationModel? LogedinUser
+        {
+            get
+            {
+                return logedinUser;
+            }
+            set
+            {
+                logedinUser = value;
+            }
         }
 
+        public IDbTransaction Transaction => _transaction;
+        public IDbConnection Connection => _connection;
+        public IPackagesRepository PackagesRepository => new PackagesRepository(Connection, LogedinUser);
 
-        public IDbTransaction Transaction => transaction;
-        public IDbConnection Connection => connection;
+        public IAccessFeeTransactionRepository AccessFeeTransactionRepository => new AccessFeeTransactionRepository(Connection, LogedinUser);
 
+        public IPaymentModeRepository PaymentModeRepository => new PaymentModeRepository(Connection, LogedinUser);
+        public ITarifRepository TarifRepository => new TarifRepository(Connection, LogedinUser);
+        public IFixedTarifRepository FixedTarifRepository => new FixedTarifRepository(Connection, LogedinUser);
+        public ITarifTypeRepository TarifTypeRepository => new TarifTypeRepository(Connection, LogedinUser);
+        public IVehicleTypeRepository VehicleTypeRepository => new VehicleTypeRepository(Connection, LogedinUser);
+        public IHourlyTarifRepository HourlyTarifRepository => new HourlyTarifRepository(Connection, LogedinUser);
 
-        private IPackagesRepository _packagesRepository;
-        public IPackagesRepository PackagesRepository =>
-            _packagesRepository ??= new PackagesRepository(connection, transaction);
+        public ITollBoothRepository TollBoothRepository => new TollBoothRepository(Connection, LogedinUser);
 
-        private IAccessFeeTransactionRepository _accessFeeTransactionRepository;
-        public IAccessFeeTransactionRepository AccessFeeTransactionRepository =>
-            _accessFeeTransactionRepository ??= new AccessFeeTransactionRepository(connection, transaction);
-
-        private IPaymentModeRepository _paymentModeRepository;
-        public IPaymentModeRepository PaymentModeRepository =>
-            _paymentModeRepository ??= new PaymentModeRepository(connection, transaction);
-
-        private ITarifRepository _tarifRepository;
-        public ITarifRepository TarifRepository =>
-            _tarifRepository ??= new TarifRepository(connection, transaction);
-
-
-        private IFixedTarifRepository _fixedTarifRepository;
-        public IFixedTarifRepository FixedTarifRepository =>
-            _fixedTarifRepository ??= new FixedTarifRepository(connection, transaction);
-
-        private ITarifTypeRepository _tarifTypeRepository;
-        public ITarifTypeRepository TarifTypeRepository =>
-            _tarifTypeRepository ??= new TarifTypeRepository(connection, transaction);
-        private IVehicleTypeRepository _vehicleTypeRepository;
-        public IVehicleTypeRepository VehicleTypeRepository =>
-            _vehicleTypeRepository ??= new VehicleTypeRepository(connection, transaction);
-
-        private IHourlyTarifRepository _hourlyTarifRepository;
-        public IHourlyTarifRepository HourlyTarifRepository =>
-            _hourlyTarifRepository ??= new HourlyTarifRepository(connection, transaction);
-
-
+        public IDistanceTarifRepository DistanceTarifRepository => new DistanceTarifRepository(Connection, LogedinUser);
+        public ITimeBasedRepository TimeBasedRepository => new TimeBasedRepository(Connection, LogedinUser);
+        public IVehicleAccountsRepository VehicleAccountsRepository => new VehicleAccountsRepository(Connection, LogedinUser);
+        public IVehicalPackageRepository VehicalPackageRepository => new VehicalPackageRepository(Connection, LogedinUser);
 
         public void BeginTransaction()
         {
-            transaction = Connection.BeginTransaction();
+            _transaction = _connection.BeginTransaction();
+            _logger.LogInformation("Transaction started.");
         }
-
         public void Commit()
         {
             try
             {
-                transaction.Commit();
+                _transaction?.Commit();
+                _logger.LogInformation("Transaction committed.");
             }
-            catch
+            catch (Exception ex)
             {
-                transaction.Rollback();
+                _transaction?.Rollback();
+                _logger.LogError(ex, "Transaction commit failed. Rolled back.");
                 throw;
             }
             finally
             {
-                connection.Close();
-                Dispose();
+                _connection?.Close();
             }
+        }
+        public async Task CommitAsync()
+        {
+            await Task.Run(() => Commit());
         }
 
         public void Rollback()
         {
-            transaction.Rollback();
-            Dispose();
+            _transaction?.Rollback();
+            _logger.LogWarning("Transaction rolled back.");
+            _connection?.Close();
+        }
+
+        public async Task RollbackAsync()
+        {
+            await Task.Run(() => Rollback());
         }
 
         public void Dispose()
         {
-            transaction?.Dispose();
-            connection?.Close();
-            connection?.Dispose();
+            _transaction?.Dispose();
+            _connection?.Dispose();
             GC.SuppressFinalize(this);
         }
+
 
     }
 }

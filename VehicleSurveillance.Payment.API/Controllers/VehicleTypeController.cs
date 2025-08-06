@@ -1,87 +1,105 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using VisualSoft.Surveillance.Payment.API.Models.CreateRequest;
+using VisualSoft.Surveillance.Payment.API.Models.Response;
+using VisualSoft.Surveillance.Payment.API.Models.UpdateRequest;
+using VisualSoft.Surveillance.Payment.Domain.Models;
+using VisualSoft.Surveillance.Payment.Services.Implementations;
 using Microsoft.AspNetCore.Mvc;
-using VehicleSurveillance.Domain.Models;
-using VehicleSurveillance.Payment.API.Models.CreateRequest;
-using VehicleSurveillance.Payment.API.Models.Response;
-using VehicleSurveillance.Payment.API.Models.UpdateRequest;
-using VehicleSurveillance.Services.Implementations;
+using AutoMapper;
 
-namespace VehicleSurveillance.Payment.API.Controllers
+namespace VisualSoft.Surveillance.Payment.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class VehicleTypeController : ControllerBase
     {
-       
-            private readonly VehicleTypeService _vehicleTypeService;
-            private readonly IMapper _mapper;
+        private readonly VehicleTypeService _vehicleTypeService;
+        private readonly IMapper _mapper;
 
-            public VehicleTypeController(VehicleTypeService VehicleTypeService, IMapper mapper)
-            {
-                _vehicleTypeService = VehicleTypeService;
-                _mapper = mapper;
-            }
-
-            [HttpGet]
-            public IActionResult GetAll()
-            {
-                var VehicleType = _vehicleTypeService.GetAll();
-                var response = _mapper.Map<List<TarifTypeResponseModel>>(VehicleType);
-                return Ok(response);
-            }
-
-            [HttpGet("{id}")]
-            public IActionResult GetById(Guid id)
-            {
-                try
-                {
-                    var tarifType = _vehicleTypeService.GetById(id);
-                    var response = _mapper.Map<TarifTypeResponseModel>(tarifType);
-                    return Ok(response);
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    return NotFound(new { message = ex.Message });
-                }
-            }
-
-            [HttpPost]
-            public IActionResult Create(TarifTypeCreateRequestModel request)
-            {
-                var model = _mapper.Map<VehicleTypeModel>(request);
-                _vehicleTypeService.Add(model);
-                return Ok("VehicleType created successfully.");
-            }
-
-            [HttpPut("{id}")]
-            public IActionResult Update(Guid id, VehicleTypeUpdateModel request)
-            {
-                try
-                {
-                    var model = _mapper.Map<VehicleTypeModel>(request);
-                    model.Id = id;
-                    _vehicleTypeService.Update(model);
-                    return Ok("VehicleType updated successfully.");
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    return NotFound(new { message = ex.Message });
-                }
-            }
-
-            [HttpDelete("{id}")]
-            public IActionResult Delete(Guid id)
-            {
-                try
-                {
-                _vehicleTypeService.Delete(id);
-                    return Ok("VehicleType deleted successfully.");
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    return NotFound(new { message = ex.Message });
-                }
-            }
+        public VehicleTypeController(VehicleTypeService vehicleTypeService, IMapper mapper)
+        {
+            _vehicleTypeService = vehicleTypeService;
+            _mapper = mapper;
         }
+
+        [HttpGet("all")]
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllAsync()
+        {
+            var result = await _vehicleTypeService.GetAllAsync();
+            var response = _mapper.Map<List<TarifTypeResponseModel>>(result); // You can change to VehicleTypeResponseModel if available
+            return Ok(response);
+        }
+
+        [HttpPost("Post")]
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateAsync([FromBody] TarifTypeCreateRequestModel request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var vehicleType = _mapper.Map<VehicleTypeModel>(request);
+            await _vehicleTypeService.AddAsync(vehicleType);
+            var response = _mapper.Map<TarifTypeResponseModel>(vehicleType);
+            return Ok(response);
+        }
+
+        [HttpGet("{id}")]
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<TarifTypeResponseModel>> GetByIdAsync(Guid id)
+        {
+            var vehicleType = await _vehicleTypeService.GetByIdAsync(id);
+            var response = _mapper.Map<TarifTypeResponseModel>(vehicleType);
+            return Ok(response);
+        }
+
+        [HttpPut("{id}")]
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateAsync(Guid id, VehicleTypeUpdateModel request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var vehicleType = _mapper.Map<VehicleTypeModel>(request);
+            vehicleType.Id = id;
+            await _vehicleTypeService.UpdateAsync(vehicleType);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        //[Authorize(Policy = Constants.Permissions.VIEW_TRANSACTION)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteAsync(Guid id)
+        {
+            await _vehicleTypeService.DeleteAsync(id);
+            return Ok();
+        }
+    }
 }
